@@ -17,8 +17,8 @@
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script>
 
-var width = 1800,
-    height = 1900;
+var width = 2400,
+    height = 2500;
 
 var color = d3.scale.category10();
 
@@ -31,7 +31,7 @@ var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
 
-d3.json("retweets.json", function(error, graph) {	
+d3.json("retweets.json", function(error, graph) {
   if (error) throw error;
 
   force
