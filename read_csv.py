@@ -20,7 +20,7 @@ def getting_users():
         counter_positions = 0
         for row in reader:
             # TODO contar a quantidade de rows no reader e não a quantidade de pessoas cadastradas
-            if counter_rows > 234:
+            if counter_rows > 618:
                 group = 2
             else:
                 group = 1
