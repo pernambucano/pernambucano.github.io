@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Grafo--</title>
+    <style>
+
+
+body, h1, h2 {
+    color: #444;
+    font-family: 'Helvetica Neue', Helvetica, sans-serif;
+    font-weight: 300;
+}
+#graph {
+    float: left;
+    position: relative;
+}
+#notes {
+    float: left;
+    margin-left: 20px;
+    margin-top: 7% !important;
+}
+h1, h2 {
+    margin: 0;
+}
+h1 {
+    font-size: 1.4em;
+    margin-bottom: 0.2em;
+}
+h2 {
+    font-size: 1.1em;
+    margin-bottom: 1em;
+}
+.artwork img {
+    border: 1px solid #fff;
+    -webkit-box-shadow: 0 3px 5px rgba(0,0,0,.3);
+    -moz-box-shadow: rgba(0,0,0,.3) 0 3px 5px;
+    border-color: #a2a2a2    9;
+}
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+li {
+    padding-top: 0.2em;
+}
+.node circle, circle.node {
+    cursor:       pointer;
+    fill:         #ccc;
+    stroke:       #fff;
+    stroke-width: 1px;
+}
+.edge line, line.edge {
+    cursor:       pointer;
+    stroke:       #aaa;
+    stroke-width: 0.8px;
+}
+.labelNode text, text.labelNode {
+    cursor:       pointer;
+    fill:        #444;
+    font-size:   11px;
+    font-weight: normal;
+}
+ul.connection {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: normal;
+    padding: 10px;
+    position: absolute;
+}
+ul.connection:before,
+ul.connection:after {
+    border: 10px solid transparent;
+    content: '';
+    position: absolute;
+}
+ul.connection:before {
+    border-bottom-color: #f0f0f0;
+    top: -19px;
+    left: 20px;
+    z-index: 2;
+}
+ul.connection:after {
+    border-bottom-color: rgba(0, 0, 0, 0.2);
+    top: -21px;
+    left: 20px;
+    z-index: 1;
+}
+
+ul.connection.hidden {
+    display: none;
+}
+
+    </style>
+</head>
+<body>
+    <div id='container'>
+        <div id='graph'></div>
+        <div id='notes'></div>
+    </div>
+    <script src='http://d3js.org/d3.v3.min.js'></script>
+    <script>
+
+var width = 1400,
+    height = 900;
+
+var labelFill = '#444';
+var adjLabelFill = '#aaa';
+var edgeStroke = '#aaa';
+var nodeFill = '#ccc';
+var nodeRadius = 5;
+var selectedNodeRadius = 10;
+
+var linkDistance = Math.min(width,height)/4;
+
+var graph = d3.select('#graph');
+
+var svg = graph.append('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+var notes = d3.select('#notes')
+    .style({
+        'width': 50 + 'px',
+        'height': height + 'px'
+    });
+
+var positionEdge = function(edge, nodes) {
+    edge.attr('x1', function(d) {
+        return nodes ? nodes[d.source].x : d.source.x;
+    }).attr('y1', function(d) {
+        return nodes ? nodes[d.source].y : d.source.y;
+    }).attr('x2', function(d) {
+        return nodes ? nodes[d.target].x : d.target.x;
+    }).attr('y2', function(d) {
+        return nodes ? nodes[d.target].y : d.target.y;
+    });
+};
+
+var positionNode = function(node) {
+    node.attr('transform', function(d) {
+        return 'translate(' + d.x + ',' + d.y + ')';
+    });
+};
+
+// Define the data.
+
+var data = [
+   {
+      "edges":[
+         "EtreBr",
+         "niallceqci"
+      ],
+      "color":"#4d88ff",
+      "name":"niallceqci",
+      "photo":"http://pbs.twimg.com/profile_images/733830868578504704/7VlQ1QKo_normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "robertaelke",
+         "AdrianaDriRio"
+      ],
+      "color":"#4d88ff",
+      "name":"AdrianaDriRio",
+      "photo":"http://pbs.twimg.com/profile_images/721022838078119936/oAwqQadT_normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "MARTINSRJ1"
+      ],
+      "color":"#4d88ff",
+      "name":"MARTINSRJ1",
+      "photo":"http://pbs.twimg.com/profile_images/694989509029711872/HYgLwGwA_normal.jpg"
+   },
+   {
+      "edges":[
+         "jessicadu00",
+         "STavareis"
+      ],
+      "color":"#4d88ff",
+      "name":"STavareis",
+      "photo":"http://pbs.twimg.com/profile_images/668830716256518146/DXcGDlLD_normal.jpg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "marciagomessil1"
+      ],
+      "color":"#4d88ff",
+      "name":"marciagomessil1",
+      "photo":"http://pbs.twimg.com/profile_images/618530870761246724/jmkaE7cY_normal.jpg"
+   },
+   {
+      "edges":[
+         "eduardomaluf2",
+         "fontesgilberto"
+      ],
+      "color":"#4d88ff",
+      "name":"fontesgilberto",
+      "photo":"http://pbs.twimg.com/profile_images/477769394920357888/94RjzdxD_normal.jpeg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "rob_scholz"
+      ],
+      "color":"#4d88ff",
+      "name":"rob_scholz",
+      "photo":"http://pbs.twimg.com/profile_images/2493360539/cwq91ajv10navri8e35z_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "apoitia_du"
+      ],
+      "color":"#4d88ff",
+      "name":"apoitia_du",
+      "photo":"http://pbs.twimg.com/profile_images/651797706168532992/B9HzXOEf_normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "a_rj1"
+      ],
+      "color":"#4d88ff",
+      "name":"a_rj1",
+      "photo":"http://pbs.twimg.com/profile_images/726911892325847041/rrRcpqNW_normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "Canmeira"
+      ],
+      "color":"#4d88ff",
+      "name":"Canmeira",
+      "photo":"http://pbs.twimg.com/profile_images/727586356210368513/npv393UU_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Carmen_Gua"
+      ],
+      "color":"#4d88ff",
+      "name":"Carmen_Gua",
+      "photo":"http://pbs.twimg.com/profile_images/551164280158961665/dHMaP6qU_normal.jpeg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "RobGreenFields"
+      ],
+      "color":"#4d88ff",
+      "name":"RobGreenFields",
+      "photo":"http://pbs.twimg.com/profile_images/649375636411273217/oS5UfWRS_normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "felipebritofb"
+      ],
+      "color":"#4d88ff",
+      "name":"felipebritofb",
+      "photo":"http://pbs.twimg.com/profile_images/730718944525467648/l-rNfLap_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "GigioThomaz"
+      ],
+      "color":"#4d88ff",
+      "name":"GigioThomaz",
+      "photo":"http://pbs.twimg.com/profile_images/585576545051344897/iRXT-zaW_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "EtreBr",
+         "EltonApollo"
+      ],
+      "color":"#4d88ff",
+      "name":"EltonApollo",
+      "photo":"http://pbs.twimg.com/profile_images/694994709069045760/vhoSr5-7_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "EtreBr",
+         "EltonApollo"
+      ],
+      "color":"#4d88ff",
+      "name":"EltonApollo",
+      "photo":"http://pbs.twimg.com/profile_images/694994709069045760/vhoSr5-7_normal.jpg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "EtreBr",
+         "marchezan_",
+         "MauricioMLO"
+      ],
+      "color":"#4d88ff",
+      "name":"MauricioMLO",
+      "photo":"http://pbs.twimg.com/profile_images/652077944282710016/bOoostjX_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "ALblini"
+      ],
+      "color":"#4d88ff",
+      "name":"ALblini",
+      "photo":"http://pbs.twimg.com/profile_images/2339839026/6wv8owp79hurcgz4e8uj_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "danigotesman"
+      ],
+      "color":"#4d88ff",
+      "name":"danigotesman",
+      "photo":"http://pbs.twimg.com/profile_images/495358809385078784/GTPnjs2K_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "waltinhoradio"
+      ],
+      "color":"#4d88ff",
+      "name":"waltinhoradio",
+      "photo":"http://pbs.twimg.com/profile_images/586516657322901504/So7RpSfZ_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Foraptdilma"
+      ],
+      "color":"#4d88ff",
+      "name":"Foraptdilma",
+      "photo":"http://pbs.twimg.com/profile_images/570336168140779520/ZiUtrnht_normal.jpeg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "danpontes999"
+      ],
+      "color":"#4d88ff",
+      "name":"danpontes999",
+      "photo":"http://pbs.twimg.com/profile_images/1429545982/photo0298_normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "caitum"
+      ],
+      "color":"#4d88ff",
+      "name":"caitum",
+      "photo":"http://pbs.twimg.com/profile_images/583980687365111808/qE1SQNtG_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "ronaldoliveira2"
+      ],
+      "color":"#4d88ff",
+      "name":"ronaldoliveira2",
+      "photo":"http://pbs.twimg.com/profile_images/698712467682304000/jW193rH8_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "GIFFONIBRAVO"
+      ],
+      "color":"#4d88ff",
+      "name":"GIFFONIBRAVO",
+      "photo":"http://pbs.twimg.com/profile_images/727666606642442245/LTHcGvE4_normal.jpg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "davidfcesar"
+      ],
+      "color":"#4d88ff",
+      "name":"davidfcesar",
+      "photo":"http://pbs.twimg.com/profile_images/689823765895589888/WM6eZQhr_normal.png"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "LeonardoFM11"
+      ],
+      "color":"#4d88ff",
+      "name":"LeonardoFM11",
+      "photo":"http://pbs.twimg.com/profile_images/687833534560645121/VFuJK_uM_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "matheusft82"
+      ],
+      "color":"#4d88ff",
+      "name":"matheusft82",
+      "photo":"http://pbs.twimg.com/profile_images/625350728391991296/UDeNs746_normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "alves_truz"
+      ],
+      "color":"#4d88ff",
+      "name":"alves_truz",
+      "photo":"http://pbs.twimg.com/profile_images/705088861131698176/oVpZGWiq_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "ef96d509580b484"
+      ],
+      "color":"#4d88ff",
+      "name":"ef96d509580b484",
+      "photo":"http://pbs.twimg.com/profile_images/730187166983303170/HIm_Z08v_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "abadeduda"
+      ],
+      "color":"#4d88ff",
+      "name":"abadeduda",
+      "photo":"http://pbs.twimg.com/profile_images/586907419646808064/2D8L_uEm_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Reginar_r"
+      ],
+      "color":"#4d88ff",
+      "name":"Reginar_r",
+      "photo":"http://pbs.twimg.com/profile_images/606840800622878720/xlWDfAhm_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "GuaracidaCruz"
+      ],
+      "color":"#4d88ff",
+      "name":"GuaracidaCruz",
+      "photo":"http://pbs.twimg.com/profile_images/3435186614/9a576e8a3ea2a2ffe187b62829945089_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "talitatrainer"
+      ],
+      "color":"#4d88ff",
+      "name":"talitatrainer",
+      "photo":"http://pbs.twimg.com/profile_images/725462134428151808/CIPpDg3O_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "hudsondesouza11"
+      ],
+      "color":"#4d88ff",
+      "name":"hudsondesouza11",
+      "photo":"http://pbs.twimg.com/profile_images/378800000647616103/c898b582c7c2a37afc294c1f41b1545c_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "gigioedudu"
+      ],
+      "color":"#4d88ff",
+      "name":"gigioedudu",
+      "photo":"http://pbs.twimg.com/profile_images/714971029538521088/-RjxsnX__normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "tiagocamassutti"
+      ],
+      "color":"#4d88ff",
+      "name":"tiagocamassutti",
+      "photo":"http://abs.twimg.com/sticky/default_profile_images/default_profile_1_normal.png"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "alvim93"
+      ],
+      "color":"#4d88ff",
+      "name":"alvim93",
+      "photo":"http://pbs.twimg.com/profile_images/601744149549883392/ZsD8EHoJ_normal.png"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Nelson_Harter"
+      ],
+      "color":"#4d88ff",
+      "name":"Nelson_Harter",
+      "photo":"http://pbs.twimg.com/profile_images/696867014615416832/GRVj0708_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "MARGARETHALBUQU"
+      ],
+      "color":"#4d88ff",
+      "name":"MARGARETHALBUQU",
+      "photo":"http://pbs.twimg.com/profile_images/730390486637285376/j7gi178g_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "ptnuncamais",
+         "neocomunicabh",
+         "goxtosaxim"
+      ],
+      "color":"#4d88ff",
+      "name":"goxtosaxim",
+      "photo":"http://pbs.twimg.com/profile_images/718402890449215488/3LbWl-9J_normal.jpg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "DefesaHetero"
+      ],
+      "color":"#4d88ff",
+      "name":"DefesaHetero",
+      "photo":"http://pbs.twimg.com/profile_images/2045321028/adht_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "BordinVania"
+      ],
+      "color":"#4d88ff",
+      "name":"BordinVania",
+      "photo":"http://pbs.twimg.com/profile_images/711713480244596736/QHQ_hVSa_normal.jpg"
+   },
+   {
+      "edges":[
+         "jusgarcia",
+         "demattosmonica"
+      ],
+      "color":"#4d88ff",
+      "name":"demattosmonica",
+      "photo":"http://pbs.twimg.com/profile_images/1836476126/image_normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "luciaturchetto"
+      ],
+      "color":"#4d88ff",
+      "name":"luciaturchetto",
+      "photo":"http://pbs.twimg.com/profile_images/725135599674363904/mP-WetT7_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Cellofla45"
+      ],
+      "color":"#4d88ff",
+      "name":"Cellofla45",
+      "photo":"http://pbs.twimg.com/profile_images/731225824205144064/4hX1nULg_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "JokerBH666"
+      ],
+      "color":"#4d88ff",
+      "name":"JokerBH666",
+      "photo":"http://pbs.twimg.com/profile_images/735459183848509440/arKhaPb__normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "caboff1"
+      ],
+      "color":"#4d88ff",
+      "name":"caboff1",
+      "photo":"http://pbs.twimg.com/profile_images/709171340180393988/F1vlk2WO_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "rafaeldmatheus"
+      ],
+      "color":"#4d88ff",
+      "name":"rafaeldmatheus",
+      "photo":"http://pbs.twimg.com/profile_images/505334111532113921/u2bMCvBI_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "adijsantos"
+      ],
+      "color":"#4d88ff",
+      "name":"adijsantos",
+      "photo":"http://pbs.twimg.com/profile_images/719557141405822977/SLVPGhMK_normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "Hwidger"
+      ],
+      "color":"#4d88ff",
+      "name":"Hwidger",
+      "photo":"http://pbs.twimg.com/profile_images/705757615247196160/f98zy6yk_normal.jpg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "anaalmeidaca38"
+      ],
+      "color":"#4d88ff",
+      "name":"anaalmeidaca38",
+      "photo":"http://pbs.twimg.com/profile_images/733452053494784000/lU-xiMph_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "ninarosacorrea"
+      ],
+      "color":"#4d88ff",
+      "name":"ninarosacorrea",
+      "photo":"http://pbs.twimg.com/profile_images/453578038358179840/JdwHJzw6_normal.jpeg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "EtreBr",
+         "marchezan_",
+         "AcordouAcordou"
+      ],
+      "color":"#4d88ff",
+      "name":"AcordouAcordou",
+      "photo":"http://pbs.twimg.com/profile_images/731609504647946241/vcZKbRFq_normal.jpg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "EtreBr",
+         "marchezan_",
+         "MauricioMLO"
+      ],
+      "color":"#4d88ff",
+      "name":"MauricioMLO",
+      "photo":"http://pbs.twimg.com/profile_images/652077944282710016/bOoostjX_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "RenatoKedson"
+      ],
+      "color":"#4d88ff",
+      "name":"RenatoKedson",
+      "photo":"http://pbs.twimg.com/profile_images/725386129831264257/PzJdTmaz_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "MancheteReal"
+      ],
+      "color":"#4d88ff",
+      "name":"MancheteReal",
+      "photo":"http://pbs.twimg.com/profile_images/761144307/capa-do-diario-de-noticias-de-23-de-janeiro-de-2008_normal.jpg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "EtreBr",
+         "marchezan_",
+         "MauricioMLO"
+      ],
+      "color":"#4d88ff",
+      "name":"MauricioMLO",
+      "photo":"http://pbs.twimg.com/profile_images/652077944282710016/bOoostjX_normal.jpg"
+   },
+   {
+      "edges":[
+         "claudiorobsilva",
+         "euudisseque"
+      ],
+      "color":"#4d88ff",
+      "name":"euudisseque",
+      "photo":"http://pbs.twimg.com/profile_images/732583550432751621/G6GcRe7H_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "lobaoeletrico"
+      ],
+      "color":"#4d88ff",
+      "name":"lobaoeletrico",
+      "photo":"http://pbs.twimg.com/profile_images/628297609380253696/oqTwyGkB_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "earcarmona"
+      ],
+      "color":"#4d88ff",
+      "name":"earcarmona",
+      "photo":"http://pbs.twimg.com/profile_images/721004181843087361/BZMMf8bu_normal.jpg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "EtreBr",
+         "marchezan_",
+         "AcordouAcordou"
+      ],
+      "color":"#4d88ff",
+      "name":"AcordouAcordou",
+      "photo":"http://pbs.twimg.com/profile_images/731609504647946241/vcZKbRFq_normal.jpg"
+   },
+   {
+      "edges":[
+         "kekaavelar",
+         "EtreBr",
+         "marchezan_",
+         "AcordouAcordou"
+      ],
+      "color":"#4d88ff",
+      "name":"AcordouAcordou",
+      "photo":"http://pbs.twimg.com/profile_images/731609504647946241/vcZKbRFq_normal.jpg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "rakelmaia55"
+      ],
+      "color":"#4d88ff",
+      "name":"rakelmaia55",
+      "photo":"http://pbs.twimg.com/profile_images/692100809098571776/09crgsxE_normal.png"
+   },
+   {
+      "edges":[
+         "alexcdias06",
+         "ThomasAlencar11"
+      ],
+      "color":"#4d88ff",
+      "name":"ThomasAlencar11",
+      "photo":"http://pbs.twimg.com/profile_images/734135435962781698/mwqlNGyG_normal.jpg"
+   },
+   {
+      "edges":[
+         "reaciago",
+         "rebecajulia17"
+      ],
+      "color":"#4d88ff",
+      "name":"rebecajulia17",
+      "photo":"http://pbs.twimg.com/profile_images/732292723798081536/C8euVFv2_normal.jpg"
+   },
+   {
+      "edges":[
+         "reaciago",
+         "sountilurmine"
+      ],
+      "color":"#4d88ff",
+      "name":"sountilurmine",
+      "photo":"http://pbs.twimg.com/profile_images/736921743772766208/ssw_nEEZ_normal.jpg"
+   },
+   {
+      "edges":[
+         "jusgarcia",
+         "demattosmonica"
+      ],
+      "color":"#4d88ff",
+      "name":"demattosmonica",
+      "photo":"http://pbs.twimg.com/profile_images/1836476126/image_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "seibel10"
+      ],
+      "color":"#4d88ff",
+      "name":"seibel10",
+      "photo":"http://pbs.twimg.com/profile_images/729431490937946112/5XpIyWUV_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "dellFerraz"
+      ],
+      "color":"#4d88ff",
+      "name":"dellFerraz",
+      "photo":"http://pbs.twimg.com/profile_images/1771106076/27306_normal.jpg"
+   },
+   {
+      "edges":[
+         "jusgarcia",
+         "Bruno_Lams"
+      ],
+      "color":"#4d88ff",
+      "name":"Bruno_Lams",
+      "photo":"http://pbs.twimg.com/profile_images/607084839070801920/57fkDXig_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "belfonseca19"
+      ],
+      "color":"#4d88ff",
+      "name":"belfonseca19",
+      "photo":"http://pbs.twimg.com/profile_images/3223749734/339981bfbe1b5a680dddb60384eb741d_normal.jpeg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "belfonseca19"
+      ],
+      "color":"#4d88ff",
+      "name":"belfonseca19",
+      "photo":"http://pbs.twimg.com/profile_images/3223749734/339981bfbe1b5a680dddb60384eb741d_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "LeoCastroMat"
+      ],
+      "color":"#4d88ff",
+      "name":"LeoCastroMat",
+      "photo":"http://pbs.twimg.com/profile_images/704355115034140672/-ybnwrxv_normal.jpg"
+   },
+   {
+      "edges":[
+         "annapaimm",
+         "MarchemosBrasil"
+      ],
+      "color":"#4d88ff",
+      "name":"MarchemosBrasil",
+      "photo":"http://pbs.twimg.com/profile_images/730745801027133440/MfMWOfVk_normal.jpg"
+   },
+   {
+      "edges":[
+         "annapaimm",
+         "MegVinhas"
+      ],
+      "color":"#4d88ff",
+      "name":"MegVinhas",
+      "photo":"http://pbs.twimg.com/profile_images/420281390203031552/aouTTSdX_normal.jpeg"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "claudemir19791"
+      ],
+      "color":"#4d88ff",
+      "name":"claudemir19791",
+      "photo":"http://pbs.twimg.com/profile_images/733101194365808641/vw0xYPTe_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Arcamargo70"
+      ],
+      "color":"#4d88ff",
+      "name":"Arcamargo70",
+      "photo":"http://pbs.twimg.com/profile_images/720559274817110016/Xo1zHHf4_normal.jpg"
+   },
+   {
+      "edges":[
+         "r_inforzato",
+         "milconcei"
+      ],
+      "color":"#4d88ff",
+      "name":"milconcei",
+      "photo":"http://pbs.twimg.com/profile_images/519131525057478656/jngu0OcS_normal.jpeg"
+   },
+   {
+      "edges":[
+         "r_inforzato",
+         "arcofi",
+         "New_Delia"
+      ],
+      "color":"#4d88ff",
+      "name":"New_Delia",
+      "photo":"http://pbs.twimg.com/profile_images/545595282621071360/FJZEVTMM_normal.jpeg"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "motter_ja"
+      ],
+      "color":"#4d88ff",
+      "name":"motter_ja",
+      "photo":"http://pbs.twimg.com/profile_images/704035349799026690/b2eeWsGN_normal.jpg"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "parabensatodos"
+      ],
+      "color":"#4d88ff",
+      "name":"parabensatodos",
+      "photo":"http://pbs.twimg.com/profile_images/732936124860116992/ElQs7IFr_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "1Notadade"
+      ],
+      "color":"#4d88ff",
+      "name":"1Notadade",
+      "photo":"http://pbs.twimg.com/profile_images/513806401420795904/FP3CKeFA_normal.jpeg"
+   },
+   {
+      "edges":[
+         "EtreBr",
+         "robertaelke",
+         "AdrianaDriRio"
+      ],
+      "color":"#4d88ff",
+      "name":"AdrianaDriRio",
+      "photo":"http://pbs.twimg.com/profile_images/721022838078119936/oAwqQadT_normal.jpg"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "DenniscafeZz"
+      ],
+      "color":"#4d88ff",
+      "name":"DenniscafeZz",
+      "photo":"http://pbs.twimg.com/profile_images/727246373532405761/ZorJDENC_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "rbuobu"
+      ],
+      "color":"#4d88ff",
+      "name":"rbuobu",
+      "photo":"http://pbs.twimg.com/profile_images/710569890676084736/UGMnBRPg_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "AdrianoLourenco"
+      ],
+      "color":"#4d88ff",
+      "name":"AdrianoLourenco",
+      "photo":"http://pbs.twimg.com/profile_images/724200742639284224/Sdcf2Zos_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "CleuzaBapti"
+      ],
+      "color":"#4d88ff",
+      "name":"CleuzaBapti",
+      "photo":"http://pbs.twimg.com/profile_images/723851308382330880/2jRNIcAq_normal.jpg"
+   },
+   {
+      "edges":[
+         "JosRicardo14",
+         "emerson_carlos"
+      ],
+      "color":"#4d88ff",
+      "name":"emerson_carlos",
+      "photo":"http://pbs.twimg.com/profile_images/412598927389515776/X3nVZ2Ks_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "MarcoCampelo"
+      ],
+      "color":"#4d88ff",
+      "name":"MarcoCampelo",
+      "photo":"http://pbs.twimg.com/profile_images/731267785234452480/i5t-M2oW_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "cpidopt"
+      ],
+      "color":"#4d88ff",
+      "name":"cpidopt",
+      "photo":"http://pbs.twimg.com/profile_images/597570234690752512/IZaPhvP0_normal.jpg"
+   },
+   {
+      "edges":[
+         "JosRicardo14",
+         "robertaelke",
+         "alanferrazrj"
+      ],
+      "color":"#4d88ff",
+      "name":"alanferrazrj",
+      "photo":"http://pbs.twimg.com/profile_images/642402895032246272/JWP5LzmG_normal.png"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "ChrisTheBoy_"
+      ],
+      "color":"#4d88ff",
+      "name":"ChrisTheBoy_",
+      "photo":"http://pbs.twimg.com/profile_images/708454256152592384/S5wF1n14_normal.jpg"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "Mimy_2014"
+      ],
+      "color":"#4d88ff",
+      "name":"Mimy_2014",
+      "photo":"http://pbs.twimg.com/profile_images/492338869560291328/fmHxvsaI_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "mariagcas"
+      ],
+      "color":"#4d88ff",
+      "name":"mariagcas",
+      "photo":"http://pbs.twimg.com/profile_images/642079183468949504/6d17Hlwx_normal.jpg"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "FBI_NOTICIAS"
+      ],
+      "color":"#4d88ff",
+      "name":"FBI_NOTICIAS",
+      "photo":"http://pbs.twimg.com/profile_images/710421311764434944/HWYdCN4s_normal.jpg"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "joeoficial2014"
+      ],
+      "color":"#4d88ff",
+      "name":"joeoficial2014",
+      "photo":"http://pbs.twimg.com/profile_images/492405346409787392/Xo23UeZg_normal.png"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "MarcusVini_17"
+      ],
+      "color":"#4d88ff",
+      "name":"MarcusVini_17",
+      "photo":"http://pbs.twimg.com/profile_images/731705123173470208/sv9hadrS_normal.jpg"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "Anadi_Paula"
+      ],
+      "color":"#4d88ff",
+      "name":"Anadi_Paula",
+      "photo":"http://pbs.twimg.com/profile_images/682283917110566912/1qXyJJKO_normal.jpg"
+   },
+   {
+      "edges":[
+         "JERRYGUILAU",
+         "horandivando"
+      ],
+      "color":"#4d88ff",
+      "name":"horandivando",
+      "photo":"http://pbs.twimg.com/profile_images/731914729766162434/5TNpG4oC_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "prmaduro",
+         "marilumgon"
+      ],
+      "color":"#4d88ff",
+      "name":"marilumgon",
+      "photo":"http://pbs.twimg.com/profile_images/651161141092069376/QSUhjwbr_normal.jpg"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "marcelospfcbt"
+      ],
+      "color":"#4d88ff",
+      "name":"marcelospfcbt",
+      "photo":"http://pbs.twimg.com/profile_images/714554501768855552/2GimC1bD_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "jacksonsimoes"
+      ],
+      "color":"#4d88ff",
+      "name":"jacksonsimoes",
+      "photo":"http://pbs.twimg.com/profile_images/1543270609/Untitled-1_normal.jpg"
+   },
+   {
+      "edges":[
+         "robertaelke",
+         "TopTV_Brasil"
+      ],
+      "color":"#4d88ff",
+      "name":"TopTV_Brasil",
+      "photo":"http://pbs.twimg.com/profile_images/699594817328844802/O3vWtZA9_normal.png"
+   },
+   {
+      "edges":[
+         "OiIindona",
+         "washing38204826"
+      ],
+      "color":"#4d88ff",
+      "name":"washing38204826",
+      "photo":"http://pbs.twimg.com/profile_images/733731453415088128/i2XlBDc0_normal.jpg"
+   },
+   {
+      "edges":[
+         "JosRicardo14",
+         "robertaelke",
+         "alanferrazrj"
+      ],
+      "color":"#4d88ff",
+      "name":"alanferrazrj",
+      "photo":"http://pbs.twimg.com/profile_images/642402895032246272/JWP5LzmG_normal.png"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "Marlene_Senna"
+      ],
+      "color":"#4d88ff",
+      "name":"Marlene_Senna",
+      "photo":"http://pbs.twimg.com/profile_images/639970864046448640/iPtyCujn_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "AndreaFigueired"
+      ],
+      "color":"#4d88ff",
+      "name":"AndreaFigueired",
+      "photo":"http://pbs.twimg.com/profile_images/2674935424/48165f8fcea1cfb88ff3cd52d1f3c389_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "PaulGilmar"
+      ],
+      "color":"#4d88ff",
+      "name":"PaulGilmar",
+      "photo":"http://pbs.twimg.com/profile_images/419597533116370944/Olsl-z8l_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "br12ro"
+      ],
+      "color":"#4d88ff",
+      "name":"br12ro",
+      "photo":"http://pbs.twimg.com/profile_images/619191243445243904/V-SQMNkI_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "otaviopaz"
+      ],
+      "color":"#4d88ff",
+      "name":"otaviopaz",
+      "photo":"http://pbs.twimg.com/profile_images/717867839273697280/-skjNr6z_normal.jpg"
+   },
+   {
+      "edges":[
+         "guilherme__rios",
+         "marcelincoelho"
+      ],
+      "color":"#4d88ff",
+      "name":"marcelincoelho",
+      "photo":"http://pbs.twimg.com/profile_images/708115954899816449/fJPoGsgT_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Marcosguaiba"
+      ],
+      "color":"#4d88ff",
+      "name":"Marcosguaiba",
+      "photo":"http://pbs.twimg.com/profile_images/685461775903506432/ZiLUOTXD_normal.png"
+   },
+   {
+      "edges":[
+         "_Lavoisier",
+         "koramulata"
+      ],
+      "color":"#4d88ff",
+      "name":"koramulata",
+      "photo":"http://pbs.twimg.com/profile_images/736003029149712384/E-epelHC_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Foxnews1"
+      ],
+      "color":"#4d88ff",
+      "name":"Foxnews1",
+      "photo":"http://pbs.twimg.com/profile_images/530224934300033024/5XKcoNda_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "fataloliveira1"
+      ],
+      "color":"#4d88ff",
+      "name":"fataloliveira1",
+      "photo":"http://pbs.twimg.com/profile_images/671324094785302529/GFXkET-u_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "geacarlobc"
+      ],
+      "color":"#4d88ff",
+      "name":"geacarlobc",
+      "photo":"http://pbs.twimg.com/profile_images/597507367446667265/LOz1IKpc_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "JongaPereira"
+      ],
+      "color":"#4d88ff",
+      "name":"JongaPereira",
+      "photo":"http://pbs.twimg.com/profile_images/455684533967286272/oPhTji4b_normal.jpeg"
+   },
+   {
+      "edges":[
+         "wagnerborgesjr",
+         "fabioq"
+      ],
+      "color":"#4d88ff",
+      "name":"fabioq",
+      "photo":"http://pbs.twimg.com/profile_images/2709083486/4bc9611352751cf1e78cdfaed26f56cb_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "nelsonspartacus"
+      ],
+      "color":"#4d88ff",
+      "name":"nelsonspartacus",
+      "photo":"http://pbs.twimg.com/profile_images/527911415055532032/wph0oW2A_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "BcAlemao"
+      ],
+      "color":"#4d88ff",
+      "name":"BcAlemao",
+      "photo":"http://pbs.twimg.com/profile_images/646040467499536384/mjAdAV3P_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "_NaoVaiTerCopa"
+      ],
+      "color":"#4d88ff",
+      "name":"_NaoVaiTerCopa",
+      "photo":"http://pbs.twimg.com/profile_images/731271043827011584/5TzW4rB2_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "marcelomformiga"
+      ],
+      "color":"#4d88ff",
+      "name":"marcelomformiga",
+      "photo":"http://pbs.twimg.com/profile_images/559019378335703040/lqrUJ48l_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "fabiocs"
+      ],
+      "color":"#4d88ff",
+      "name":"fabiocs",
+      "photo":"http://pbs.twimg.com/profile_images/517416922355224577/7MQfExt7_normal.png"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "mildignos"
+      ],
+      "color":"#4d88ff",
+      "name":"mildignos",
+      "photo":"http://pbs.twimg.com/profile_images/733405910702247937/1chDT8ek_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "DuuLima23"
+      ],
+      "color":"#4d88ff",
+      "name":"DuuLima23",
+      "photo":"http://pbs.twimg.com/profile_images/734948698967429120/hijDugoB_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "marcia_umari"
+      ],
+      "color":"#4d88ff",
+      "name":"marcia_umari",
+      "photo":"http://pbs.twimg.com/profile_images/710490491926745088/ldBFE4Jy_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "dalvinha47"
+      ],
+      "color":"#4d88ff",
+      "name":"dalvinha47",
+      "photo":"http://pbs.twimg.com/profile_images/734012664838561792/M9CT2ThP_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "SeiSei0"
+      ],
+      "color":"#4d88ff",
+      "name":"SeiSei0",
+      "photo":"http://pbs.twimg.com/profile_images/1737770818/mava038_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "letrin45"
+      ],
+      "color":"#4d88ff",
+      "name":"letrin45",
+      "photo":"http://pbs.twimg.com/profile_images/603228250580590593/oZNtzzz-_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Tom_brz"
+      ],
+      "color":"#4d88ff",
+      "name":"Tom_brz",
+      "photo":"http://pbs.twimg.com/profile_images/647134690927902720/qL2oiZH9_normal.png"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Dehavasan"
+      ],
+      "color":"#4d88ff",
+      "name":"Dehavasan",
+      "photo":"http://pbs.twimg.com/profile_images/443223413989986304/FRTFnIO0_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "sandrassabino"
+      ],
+      "color":"#4d88ff",
+      "name":"sandrassabino",
+      "photo":"http://pbs.twimg.com/profile_images/736219970959474689/pojC3EVH_normal.jpg"
+   },
+   {
+      "edges":[
+         "NumFod",
+         "AndreDecoy"
+      ],
+      "color":"#4d88ff",
+      "name":"AndreDecoy",
+      "photo":"http://pbs.twimg.com/profile_images/612482743193214976/0Oh7Tf3w_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "themaloya"
+      ],
+      "color":"#4d88ff",
+      "name":"themaloya",
+      "photo":"http://abs.twimg.com/sticky/default_profile_images/default_profile_0_normal.png"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "livbuk22"
+      ],
+      "color":"#4d88ff",
+      "name":"livbuk22",
+      "photo":"http://pbs.twimg.com/profile_images/446639962604056577/tNFfZ8zo_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "ptnuncamais",
+         "DrRobertoSalles"
+      ],
+      "color":"#4d88ff",
+      "name":"DrRobertoSalles",
+      "photo":"http://pbs.twimg.com/profile_images/689429483548356612/VrMm1aMz_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "mariovgomes"
+      ],
+      "color":"#4d88ff",
+      "name":"mariovgomes",
+      "photo":"http://pbs.twimg.com/profile_images/730790349933793280/uUy62JQv_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Silvio_MKT"
+      ],
+      "color":"#4d88ff",
+      "name":"Silvio_MKT",
+      "photo":"http://pbs.twimg.com/profile_images/710174240654364676/_VkDntqR_normal.jpg"
+   },
+   {
+      "edges":[
+         "htfigueira",
+         "lula_oliveira"
+      ],
+      "color":"#4d88ff",
+      "name":"lula_oliveira",
+      "photo":"http://pbs.twimg.com/profile_images/715729479046266880/QG5pUnIl_normal.png"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "dellFerraz"
+      ],
+      "color":"#4d88ff",
+      "name":"dellFerraz",
+      "photo":"http://pbs.twimg.com/profile_images/1771106076/27306_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "JulianoSMendes"
+      ],
+      "color":"#4d88ff",
+      "name":"JulianoSMendes",
+      "photo":"http://pbs.twimg.com/profile_images/730768981313916928/ZiKUTNxI_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "Rituska_"
+      ],
+      "color":"#4d88ff",
+      "name":"Rituska_",
+      "photo":"http://pbs.twimg.com/profile_images/712959246103625729/YuJCTty5_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "zaninella"
+      ],
+      "color":"#4d88ff",
+      "name":"zaninella",
+      "photo":"http://pbs.twimg.com/profile_images/711172407923515392/tm-RMFj8_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "AdrianoLourenco"
+      ],
+      "color":"#4d88ff",
+      "name":"AdrianoLourenco",
+      "photo":"http://pbs.twimg.com/profile_images/724200742639284224/Sdcf2Zos_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "FabiAgenteCIA"
+      ],
+      "color":"#4d88ff",
+      "name":"FabiAgenteCIA",
+      "photo":"http://pbs.twimg.com/profile_images/736707028559757313/uT29Wt75_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "danmunakata"
+      ],
+      "color":"#4d88ff",
+      "name":"danmunakata",
+      "photo":"http://pbs.twimg.com/profile_images/708261871292444673/qXNlyHgI_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "gdugomes"
+      ],
+      "color":"#4d88ff",
+      "name":"gdugomes",
+      "photo":"http://pbs.twimg.com/profile_images/720629463713714176/zSskaE0K_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "JDarzone"
+      ],
+      "color":"#4d88ff",
+      "name":"JDarzone",
+      "photo":"http://pbs.twimg.com/profile_images/736022255512211456/G7vjkOrk_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Geraldo_Olivera"
+      ],
+      "color":"#4d88ff",
+      "name":"Geraldo_Olivera",
+      "photo":"http://pbs.twimg.com/profile_images/710953353384218624/UC63609y_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "AyurvedaPoa"
+      ],
+      "color":"#4d88ff",
+      "name":"AyurvedaPoa",
+      "photo":"http://pbs.twimg.com/profile_images/521682469536284673/OA4RmPoQ_normal.jpeg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "Rabbits_ca"
+      ],
+      "color":"#4d88ff",
+      "name":"Rabbits_ca",
+      "photo":"http://pbs.twimg.com/profile_images/735944515765293056/2RJiMI8b_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "pinheirolettici"
+      ],
+      "color":"#4d88ff",
+      "name":"pinheirolettici",
+      "photo":"http://pbs.twimg.com/profile_images/733782892573265921/nDn9SHnj_normal.jpg"
+   },
+   {
+      "edges":[
+         "thepatricao",
+         "PORTO_Nat"
+      ],
+      "color":"#4d88ff",
+      "name":"PORTO_Nat",
+      "photo":"http://pbs.twimg.com/profile_images/657179503819694080/Jfv-W5Vy_normal.jpg"
+   },
+   {
+      "edges":[
+         "Wanderson_Panch",
+         "PanchRapha"
+      ],
+      "color":"#4d88ff",
+      "name":"PanchRapha",
+      "photo":"http://abs.twimg.com/sticky/default_profile_images/default_profile_0_normal.png"
+   },
+   {
+      "edges":[
+         "Wanderson_Panch",
+         "PanchRapha"
+      ],
+      "color":"#4d88ff",
+      "name":"PanchRapha",
+      "photo":"http://abs.twimg.com/sticky/default_profile_images/default_profile_0_normal.png"
+   },
+   {
+      "edges":[
+         "Wanderson_Panch",
+         "PanchRapha"
+      ],
+      "color":"#4d88ff",
+      "name":"PanchRapha",
+      "photo":"http://abs.twimg.com/sticky/default_profile_images/default_profile_0_normal.png"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "letrasLTDA"
+      ],
+      "color":"#4d88ff",
+      "name":"letrasLTDA",
+      "photo":"http://pbs.twimg.com/profile_images/680574103582060544/_zGDRJQL_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "patggou1",
+         "Gabrielgalura"
+      ],
+      "color":"#4d88ff",
+      "name":"Gabrielgalura",
+      "photo":"http://pbs.twimg.com/profile_images/731516511224004609/0jI7C241_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "Chiwizz1"
+      ],
+      "color":"#4d88ff",
+      "name":"Chiwizz1",
+      "photo":"http://pbs.twimg.com/profile_images/446043101166333952/7MhxmEIi_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "aparecidapz"
+      ],
+      "color":"#4d88ff",
+      "name":"aparecidapz",
+      "photo":"http://pbs.twimg.com/profile_images/575853389898080256/SlFR6_iw_normal.jpeg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "obrasil_e_nosso"
+      ],
+      "color":"#4d88ff",
+      "name":"obrasil_e_nosso",
+      "photo":"http://pbs.twimg.com/profile_images/711177276164014080/RINatPMN_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "OsvladPereira"
+      ],
+      "color":"#4d88ff",
+      "name":"OsvladPereira",
+      "photo":"http://pbs.twimg.com/profile_images/724911155576225792/qqb5R4pS_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "TO_DE_OLHO"
+      ],
+      "color":"#4d88ff",
+      "name":"TO_DE_OLHO",
+      "photo":"http://pbs.twimg.com/profile_images/709451379874484224/26yHq_mQ_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "guidomelo1"
+      ],
+      "color":"#4d88ff",
+      "name":"guidomelo1",
+      "photo":"http://pbs.twimg.com/profile_images/730009014709280770/ej18cd_h_normal.jpg"
+   },
+   {
+      "edges":[
+         "andreliotti",
+         "_Lavoisier",
+         "RumoCertoSim"
+      ],
+      "color":"#4d88ff",
+      "name":"RumoCertoSim",
+      "photo":"http://pbs.twimg.com/profile_images/734655899130863616/29SWkYEv_normal.jpg"
+   },
+   {
+      "edges":[
+         "andreliotti",
+         "_Lavoisier",
+         "RumoCertoSim"
+      ],
+      "color":"#4d88ff",
+      "name":"RumoCertoSim",
+      "photo":"http://pbs.twimg.com/profile_images/734655899130863616/29SWkYEv_normal.jpg"
+   },
+   {
+      "edges":[
+         "zjmdark",
+         "writeslaureen"
+      ],
+      "color":"#4d88ff",
+      "name":"writeslaureen",
+      "photo":"http://pbs.twimg.com/profile_images/729108670424985600/hjihSm00_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "lourdesmsantos"
+      ],
+      "color":"#4d88ff",
+      "name":"lourdesmsantos",
+      "photo":"http://pbs.twimg.com/profile_images/530476743165870080/kqI6s7od_normal.jpeg"
+   },
+   {
+      "edges":[
+         "liviagomesfono",
+         "PaulXbrow2"
+      ],
+      "color":"#4d88ff",
+      "name":"PaulXbrow2",
+      "photo":"http://pbs.twimg.com/profile_images/669758569202524161/75mHXv-N_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "tpequeno"
+      ],
+      "color":"#4d88ff",
+      "name":"tpequeno",
+      "photo":"http://pbs.twimg.com/profile_images/706451355817345024/iNMb6Wby_normal.jpg"
+   },
+   {
+      "edges":[
+         "JoaoBANatal",
+         "nizetticardoso"
+      ],
+      "color":"#4d88ff",
+      "name":"nizetticardoso",
+      "photo":"http://pbs.twimg.com/profile_images/378800000785288234/954e155a627c72cd883ba3a599e74295_normal.jpeg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "h_jordon"
+      ],
+      "color":"#4d88ff",
+      "name":"h_jordon",
+      "photo":"http://pbs.twimg.com/profile_images/672209099417739264/U_rcPCKq_normal.png"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "LauraVieiraDias"
+      ],
+      "color":"#4d88ff",
+      "name":"LauraVieiraDias",
+      "photo":"http://pbs.twimg.com/profile_images/378800000464409124/2bb3f666b94082e0e967602455191961_normal.jpeg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "WallaceLarri"
+      ],
+      "color":"#4d88ff",
+      "name":"WallaceLarri",
+      "photo":"http://pbs.twimg.com/profile_images/718933856037048322/J6TOsmQI_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "JoceyrR"
+      ],
+      "color":"#4d88ff",
+      "name":"JoceyrR",
+      "photo":"http://pbs.twimg.com/profile_images/732012071987056644/_6sKgJX1_normal.jpg"
+   },
+   {
+      "edges":[
+         "cacildanc",
+         "fabistrada"
+      ],
+      "color":"#4d88ff",
+      "name":"fabistrada",
+      "photo":"http://pbs.twimg.com/profile_images/731305440710144001/FKCoHvmC_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "Brasangola_"
+      ],
+      "color":"#4d88ff",
+      "name":"Brasangola_",
+      "photo":"http://pbs.twimg.com/profile_images/723798401712816128/op9vd3Ho_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "arcofi",
+         "ZeferinoJanio"
+      ],
+      "color":"#4d88ff",
+      "name":"ZeferinoJanio",
+      "photo":"http://pbs.twimg.com/profile_images/515457989311221760/uIiJqrO4_normal.jpeg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "voliasobral2"
+      ],
+      "color":"#4d88ff",
+      "name":"voliasobral2",
+      "photo":"http://abs.twimg.com/sticky/default_profile_images/default_profile_5_normal.png"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "fcarravetta"
+      ],
+      "color":"#4d88ff",
+      "name":"fcarravetta",
+      "photo":"http://pbs.twimg.com/profile_images/378800000592392627/3f9274ebc72def83ba65a7c7700d59a5_normal.jpeg"
+   },
+   {
+      "edges":[
+         "patggou1",
+         "MaxBrasil2000"
+      ],
+      "color":"#4d88ff",
+      "name":"MaxBrasil2000",
+      "photo":"http://pbs.twimg.com/profile_images/691045100814778368/HMBbdmxO_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "euzenidwelder"
+      ],
+      "color":"#4d88ff",
+      "name":"euzenidwelder",
+      "photo":"http://pbs.twimg.com/profile_images/730749550537801728/KfOfwPef_normal.png"
+   },
+   {
+      "edges":[
+         "patggou1",
+         "JoeClementino"
+      ],
+      "color":"#4d88ff",
+      "name":"JoeClementino",
+      "photo":"http://abs.twimg.com/sticky/default_profile_images/default_profile_5_normal.png"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "Odara_10"
+      ],
+      "color":"#4d88ff",
+      "name":"Odara_10",
+      "photo":"http://pbs.twimg.com/profile_images/610205693229056001/7HJ-0dxF_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "CleytondeMelo"
+      ],
+      "color":"#4d88ff",
+      "name":"CleytondeMelo",
+      "photo":"http://pbs.twimg.com/profile_images/675421674511179776/rYHWMVE2_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "gatosarado2016"
+      ],
+      "color":"#4d88ff",
+      "name":"gatosarado2016",
+      "photo":"http://pbs.twimg.com/profile_images/615149487363870720/CVoEaOcp_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "pedroceleste"
+      ],
+      "color":"#4d88ff",
+      "name":"pedroceleste",
+      "photo":"http://pbs.twimg.com/profile_images/709187116039806976/8nlol4Jm_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "carmemsouza"
+      ],
+      "color":"#4d88ff",
+      "name":"carmemsouza",
+      "photo":"http://pbs.twimg.com/profile_images/730818255271526401/frU_ssK9_normal.png"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "luis13vieira"
+      ],
+      "color":"#4d88ff",
+      "name":"luis13vieira",
+      "photo":"http://pbs.twimg.com/profile_images/734239854712741889/z18f4WRk_normal.jpg"
+   },
+   {
+      "edges":[
+         "patggou1",
+         "mgfufino"
+      ],
+      "color":"#4d88ff",
+      "name":"mgfufino",
+      "photo":"http://pbs.twimg.com/profile_images/684594587520884736/VKymcMRr_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "511921hgq"
+      ],
+      "color":"#4d88ff",
+      "name":"511921hgq",
+      "photo":"http://pbs.twimg.com/profile_images/670387058658172929/hPlWOuFE_normal.jpg"
+   },
+   {
+      "edges":[
+         "patggou1",
+         "RafaelAtari"
+      ],
+      "color":"#4d88ff",
+      "name":"RafaelAtari",
+      "photo":"http://pbs.twimg.com/profile_images/517916759689818112/zyAe4cn6_normal.jpeg"
+   },
+   {
+      "edges":[
+         "arcofi",
+         "bonnieximena"
+      ],
+      "color":"#4d88ff",
+      "name":"bonnieximena",
+      "photo":"http://pbs.twimg.com/profile_images/421881094678786048/Uv7ZgHU2_normal.jpeg"
+   },
+   {
+      "edges":[
+         "patggou1",
+         "REGINAOUTEIRO"
+      ],
+      "color":"#4d88ff",
+      "name":"REGINAOUTEIRO",
+      "photo":"http://pbs.twimg.com/profile_images/718444651993251840/3QoEveO9_normal.jpg"
+   },
+   {
+      "edges":[
+         "patggou1",
+         "frostlost"
+      ],
+      "color":"#4d88ff",
+      "name":"frostlost",
+      "photo":"http://pbs.twimg.com/profile_images/1389412013/Eu_normal.jpg"
+   },
+   {
+      "edges":[
+         "arcofi",
+         "pauloquaresma2"
+      ],
+      "color":"#4d88ff",
+      "name":"pauloquaresma2",
+      "photo":"http://pbs.twimg.com/profile_images/456250389524779009/I_zQgBjb_normal.jpeg"
+   },
+   {
+      "edges":[
+         "patggou1",
+         "jadsonlima2010"
+      ],
+      "color":"#4d88ff",
+      "name":"jadsonlima2010",
+      "photo":"http://pbs.twimg.com/profile_images/730547674802491392/6wUEZ9XX_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "patggou1",
+         "Gabrielgalura"
+      ],
+      "color":"#4d88ff",
+      "name":"Gabrielgalura",
+      "photo":"http://pbs.twimg.com/profile_images/731516511224004609/0jI7C241_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "arcofi",
+         "ZeferinoJanio"
+      ],
+      "color":"#4d88ff",
+      "name":"ZeferinoJanio",
+      "photo":"http://pbs.twimg.com/profile_images/515457989311221760/uIiJqrO4_normal.jpeg"
+   },
+   {
+      "edges":[
+         "r_inforzato",
+         "arcofi",
+         "New_Delia"
+      ],
+      "color":"#4d88ff",
+      "name":"New_Delia",
+      "photo":"http://pbs.twimg.com/profile_images/545595282621071360/FJZEVTMM_normal.jpeg"
+   },
+   {
+      "edges":[
+         "prmaduro",
+         "iojandaira"
+      ],
+      "color":"#4d88ff",
+      "name":"iojandaira",
+      "photo":"http://pbs.twimg.com/profile_images/647107638996664320/BsKE6gi5_normal.jpg"
+   },
+   {
+      "edges":[
+         "Anholeto",
+         "ffmadruga"
+      ],
+      "color":"#4d88ff",
+      "name":"ffmadruga",
+      "photo":"http://pbs.twimg.com/profile_images/711613915709497344/1VVU3bn2_normal.jpg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "SacraSandra"
+      ],
+      "color":"#4d88ff",
+      "name":"SacraSandra",
+      "photo":"http://pbs.twimg.com/profile_images/700420046561132544/wxBflwkn_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "RojanioMarcio"
+      ],
+      "color":"#4d88ff",
+      "name":"RojanioMarcio",
+      "photo":"http://pbs.twimg.com/profile_images/730900888345251840/Ymy7RWFE_normal.jpg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "SacraSandra"
+      ],
+      "color":"#4d88ff",
+      "name":"SacraSandra",
+      "photo":"http://pbs.twimg.com/profile_images/700420046561132544/wxBflwkn_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "adriano_francaa"
+      ],
+      "color":"#4d88ff",
+      "name":"adriano_francaa",
+      "photo":"http://pbs.twimg.com/profile_images/733794859883073538/oRiTQ5hh_normal.jpg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "wellingtonmoura"
+      ],
+      "color":"#4d88ff",
+      "name":"wellingtonmoura",
+      "photo":"http://pbs.twimg.com/profile_images/735250490804600832/BcPfunax_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "agadanymanu"
+      ],
+      "color":"#4d88ff",
+      "name":"agadanymanu",
+      "photo":"http://pbs.twimg.com/profile_images/713021247530135552/5XDbT0y7_normal.jpg"
+   },
+   {
+      "edges":[
+         "arcofi",
+         "MariRemor"
+      ],
+      "color":"#4d88ff",
+      "name":"MariRemor",
+      "photo":"http://pbs.twimg.com/profile_images/500629187670339586/oXV8GQ8Z_normal.jpeg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "maria_padu"
+      ],
+      "color":"#4d88ff",
+      "name":"maria_padu",
+      "photo":"http://pbs.twimg.com/profile_images/736923733273776128/KBCUhiEP_normal.jpg"
+   },
+   {
+      "edges":[
+         "BethDAlmeida1",
+         "AnaPaulaVendri"
+      ],
+      "color":"#4d88ff",
+      "name":"AnaPaulaVendri",
+      "photo":"http://pbs.twimg.com/profile_images/1502678767/loira-03-300x450_normal.jpg"
+   },
+   {
+      "edges":[
+         "cacildanc",
+         "OpusckiSulains"
+      ],
+      "color":"#4d88ff",
+      "name":"OpusckiSulains",
+      "photo":"http://pbs.twimg.com/profile_images/714508648299569152/ExYCZDMB_normal.jpg"
+   },
+   {
+      "edges":[
+         "phelizardu",
+         "vishtati"
+      ],
+      "color":"#4d88ff",
+      "name":"vishtati",
+      "photo":"http://pbs.twimg.com/profile_images/731879365554929664/jav_Yvw4_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "maraferro228"
+      ],
+      "color":"#4d88ff",
+      "name":"maraferro228",
+      "photo":"http://abs.twimg.com/sticky/default_profile_images/default_profile_1_normal.png"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "AdrianoLourenco"
+      ],
+      "color":"#4d88ff",
+      "name":"AdrianoLourenco",
+      "photo":"http://pbs.twimg.com/profile_images/724200742639284224/Sdcf2Zos_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "wondergio"
+      ],
+      "color":"#4d88ff",
+      "name":"wondergio",
+      "photo":"http://pbs.twimg.com/profile_images/730768430857621505/GcY3z2IY_normal.jpg"
+   },
+   {
+      "edges":[
+         "cacildanc",
+         "fabistrada"
+      ],
+      "color":"#4d88ff",
+      "name":"fabistrada",
+      "photo":"http://pbs.twimg.com/profile_images/731305440710144001/FKCoHvmC_normal.jpg"
+   },
+   {
+      "edges":[
+         "BlogDoTato67",
+         "aeciofaraujo"
+      ],
+      "color":"#4d88ff",
+      "name":"aeciofaraujo",
+      "photo":"http://pbs.twimg.com/profile_images/714621573051846657/zBoFC4SW_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "prmaduro",
+         "marilumgon"
+      ],
+      "color":"#4d88ff",
+      "name":"marilumgon",
+      "photo":"http://pbs.twimg.com/profile_images/651161141092069376/QSUhjwbr_normal.jpg"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "sergio_pm"
+      ],
+      "color":"#4d88ff",
+      "name":"sergio_pm",
+      "photo":"http://pbs.twimg.com/profile_images/730565507192127488/svSBGwMl_normal.jpg"
+   },
+   {
+      "edges":[
+         "BlogDoTato67",
+         "ptnuncamais",
+         "neocomunicabh",
+         "fernanda281327"
+      ],
+      "color":"#4d88ff",
+      "name":"fernanda281327",
+      "photo":"http://pbs.twimg.com/profile_images/712733357512265728/3SOuCJkN_normal.jpg"
+   },
+   {
+      "edges":[
+         "BlogDoTato67",
+         "ptnuncamais",
+         "neocomunicabh",
+         "fernanda281327"
+      ],
+      "color":"#4d88ff",
+      "name":"fernanda281327",
+      "photo":"http://pbs.twimg.com/profile_images/712733357512265728/3SOuCJkN_normal.jpg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "OdilonTesser"
+      ],
+      "color":"#4d88ff",
+      "name":"OdilonTesser",
+      "photo":"http://pbs.twimg.com/profile_images/378800000221510599/ef2cb843882b23027c035a4dcf0466a0_normal.jpeg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "ptnuncamais",
+         "neocomunicabh",
+         "goxtosaxim"
+      ],
+      "color":"#4d88ff",
+      "name":"goxtosaxim",
+      "photo":"http://pbs.twimg.com/profile_images/718402890449215488/3LbWl-9J_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "ptnuncamais",
+         "neocomunicabh",
+         "goxtosaxim"
+      ],
+      "color":"#4d88ff",
+      "name":"goxtosaxim",
+      "photo":"http://pbs.twimg.com/profile_images/718402890449215488/3LbWl-9J_normal.jpg"
+   },
+   {
+      "edges":[
+         "neocomunicabh",
+         "ptnuncamais"
+      ],
+      "color":"#4d88ff",
+      "name":"ptnuncamais",
+      "photo":"http://pbs.twimg.com/profile_images/900393498/pt_normal.png"
+   },
+   {
+      "edges":[
+         "BlogDoTato67",
+         "ptnuncamais",
+         "neocomunicabh",
+         "fernanda281327"
+      ],
+      "color":"#4d88ff",
+      "name":"fernanda281327",
+      "photo":"http://pbs.twimg.com/profile_images/712733357512265728/3SOuCJkN_normal.jpg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "naskarmit"
+      ],
+      "color":"#4d88ff",
+      "name":"naskarmit",
+      "photo":"http://pbs.twimg.com/profile_images/378800000018432760/45f042cb360624caf21737c1cbd7710a_normal.jpeg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "Renato_SVP"
+      ],
+      "color":"#4d88ff",
+      "name":"Renato_SVP",
+      "photo":"http://pbs.twimg.com/profile_images/606979617304543232/jgPlaGaN_normal.jpg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "Dorasil76578668"
+      ],
+      "color":"#4d88ff",
+      "name":"Dorasil76578668",
+      "photo":"http://pbs.twimg.com/profile_images/729032480599113728/Ut8EWIft_normal.png"
+   },
+   {
+      "edges":[
+         "DilmaResiste",
+         "Braph_torres"
+      ],
+      "color":"#4d88ff",
+      "name":"Braph_torres",
+      "photo":"http://pbs.twimg.com/profile_images/733437522114666496/PFZH03Oi_normal.jpg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "XeniaAntunes"
+      ],
+      "color":"#4d88ff",
+      "name":"XeniaAntunes",
+      "photo":"http://pbs.twimg.com/profile_images/1405621575/XeniaPhotoBoot_xeniaantunes_26847_normal.jpg"
+   },
+   {
+      "edges":[
+         "prmaduro",
+         "luciamoura00"
+      ],
+      "color":"#4d88ff",
+      "name":"luciamoura00",
+      "photo":"http://pbs.twimg.com/profile_images/725028653038456833/uGw5CyFM_normal.jpg"
+   },
+   {
+      "edges":[
+         "ptnuncamais",
+         "AbdoFortunato"
+      ],
+      "color":"#4d88ff",
+      "name":"AbdoFortunato",
+      "photo":"http://pbs.twimg.com/profile_images/729294248365928450/O8hFlEvm_normal.jpg"
+   },
+   {
+      "edges":[
+         "marchezan_",
+         "ptnuncamais",
+         "neocomunicabh",
+         "goxtosaxim"
+      ],
+      "color":"#4d88ff",
+      "name":"goxtosaxim",
+      "photo":"http://pbs.twimg.com/profile_images/718402890449215488/3LbWl-9J_normal.jpg"
+   }
+];
+
+var nodes = data.map(function(entry, idx, list) {
+
+    var node = {};
+
+    node.title    = entry.name;
+    node.image    = entry.photo;
+    node.color    = entry.color;
+
+    node.links = entry.edges.slice(0);
+
+    var radius = 0.4 * Math.min(height,width);
+    var theta = idx*2*Math.PI / list.length;
+    node.x = (width/2) + radius*Math.sin(theta);
+    node.y = (height/2) + radius*Math.cos(theta);
+
+    return node;
+});
+
+var links = [];
+data.forEach(function(srcNode, srcIdx, srcList) {
+
+    srcNode.edges.forEach(function(srcLink) {
+
+        for (var tgtIdx = srcIdx + 1;
+                 tgtIdx < srcList.length;
+                 tgtIdx++) {
+
+            var tgtNode = srcList[tgtIdx];
+
+            if (tgtNode.edges.some(function(tgtLink){
+                return tgtLink === srcLink;
+            })) {
+
+                links.push({
+                    source: srcIdx,
+                    target: tgtIdx,
+                    link: srcLink
+                });
+            }
+        }
+    });
+});
+
+var edges = [];
+
+links.forEach(function(link) {
+
+    var existingEdge = false;
+
+    for (var idx = 0; idx < edges.length; idx++) {
+
+        if ((link.source === edges[idx].source) &&
+            (link.target === edges[idx].target)) {
+
+            existingEdge = edges[idx];
+            break;
+        }
+    }
+
+    if (existingEdge) {
+
+        existingEdge.links.push(link.link);
+
+    } else {
+        edges.push({
+            source: link.source,
+            target: link.target,
+            links: [link.link]
+        });
+    }
+});
+var edgeSelection = svg.selectAll('.edge')
+    .data(edges)
+    .enter()
+    .append('line')
+    .classed('edge', true)
+    .style('stroke', edgeStroke)
+    .call(positionEdge, nodes);
+
+var nodeSelection = svg.selectAll('.node')
+    .data(nodes)
+    .enter()
+    .append('g')
+    .classed('node', true)
+    .call(positionNode);
+
+nodeSelection.append('circle')
+    .attr('r', nodeRadius)
+    .attr('data-node-index', function(d,i) { return i;})
+    .style('fill', nodeFill)
+
+nodeSelection.each(function(node){
+    node.incidentEdgeSelection = edgeSelection
+        .filter(function(edge) {
+            return nodes[edge.source] === node ||
+                   nodes[edge.target] === node;
+        });
+});
+
+nodeSelection.each(function(node){
+
+    node.adjacentNodeSelection = nodeSelection
+        .filter(function(otherNode){
+            var isAdjacent = false;
+
+            if (otherNode !== node) {
+
+                node.incidentEdgeSelection.each(function(edge){
+                    otherNode.incidentEdgeSelection.each(function(otherEdge){
+                        if (edge === otherEdge) {
+                            isAdjacent = true;
+                        }
+                    });
+                });
+
+            }
+
+            return isAdjacent;
+        });
+
+});
+
+var force = d3.layout.force()
+    .size([width, height])
+    .nodes(nodes)
+    .links(edges)
+    .linkDistance(linkDistance)
+    .charge(-500);
+
+var nodeClicked = function(node) {
+
+    if (d3.event.defaultPrevented) return;
+
+    var selected = node.selected;
+
+    var fillColor;
+
+    nodeSelection
+        .each(function(node) { node.selected = false; })
+        .selectAll('circle')
+            .transition()
+            .attr('r', nodeRadius)
+            .style('fill', nodeFill);
+
+    edgeSelection
+        .transition()
+        .style('stroke', edgeStroke);
+
+    if (!selected) {
+
+        node.incidentEdgeSelection
+            .transition()
+            .style('stroke', node.color);
+
+        node.adjacentNodeSelection.selectAll('circle')
+            .transition()
+            .attr('r', nodeRadius)
+            .style('fill', node.color);
+
+        d3.selectAll('circle[data-node-index="'+node.index+'"]')
+            .transition()
+            .attr('r', selectedNodeRadius)
+            .style('fill', node.color);
+
+        fillColor = node.text;
+
+        notes.selectAll('*').remove();
+
+        notes.style({'opacity': 0});
+
+        notes.append('h1').text(node.title);
+        if (node.image) {
+            notes.append('div')
+                .append('img')
+                    .attr('src', node.image);
+        }
+
+        notes.transition().style({'opacity': 1});
+
+    } else {
+
+        notes.transition()
+            .style({'opacity': 0})
+            .each('end', function(){
+                notes.selectAll('*').remove();
+            });
+
+        fillColor = labelFill;
+    }
+
+    node.selected = !selected;
+
+};
+nodeSelection.on('click', nodeClicked);
+
+force.on('tick', function() {
+
+    nodeSelection.each(function(node) {
+        node.x = Math.max(node.x, 2*selectedNodeRadius);
+        node.y = Math.max(node.y, 2*selectedNodeRadius);
+        node.x = Math.min(node.x, width-2*selectedNodeRadius);
+        node.y = Math.min(node.y, height-2*selectedNodeRadius);
+    });  
+
+    nodeSelection.call(positionNode);
+    edgeSelection.call(positionEdge);
+
+});
+
+force.start();
+
+    </script>
+</body>
+</html>
